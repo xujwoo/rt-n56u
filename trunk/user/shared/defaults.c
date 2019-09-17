@@ -52,7 +52,7 @@ struct nvram_pair router_defaults[] = {
 	{ "lan_dhcpd_x", "0" },			/* DHCP server in AP mode */
 	{ "lan_ipaddr", DEF_LAN_ADDR },		/* LAN IP address */
 	{ "lan_netmask", DEF_LAN_MASK },	/* LAN netmask */
-	{ "lan_gateway", DEF_LAN_ADDR },	/* LAN gateway */
+	{ "lan_gateway", DEF_LAN_GATEWAY },	/* LAN gateway */
 	{ "lan_dns_x", "1" },			/* LAN DNS [static|dhcp] */
 	{ "lan_dns1", "" },			/* LAN DNS1 */
 	{ "lan_dns2", "" },			/* LAN DNS2 */
@@ -368,7 +368,7 @@ struct nvram_pair router_defaults[] = {
 	{ "apps_dms", "0" },
 	{ "apps_itunes", "0"},
 	{ "sh_num", "0" },
-	{ "computer_name", BOARD_NAME },
+	{ "computer_name", DEF_DEF_COMPUTER_NAME },
 	{ "pcache_reclaim", "2" },
 	{ "usb3_disable", "0" },
 	{ "u2ec_enable", "1" },
@@ -441,15 +441,15 @@ struct nvram_pair router_defaults[] = {
 	{ "sp_battle_ips", "0" },
 	{ "fw_log_x", "none" },
 	{ "misc_http_x", "0" },
-	{ "misc_httpport_x", "8080" },
+	{ "misc_httpport_x", "80" },
 	{ "https_wopen", "0" },
-	{ "https_wport", "8443" },
+	{ "https_wport", "443" },
 	{ "udpxy_wopen", "0" },
-	{ "udpxy_wport", "34040" },
+	{ "udpxy_wport", "4000" },
 	{ "ftpd_wopen", "0" },
 	{ "ftpd_wport", "21" },
 	{ "sshd_wopen", "0" },
-	{ "sshd_wport", "10022" },
+	{ "sshd_wport", "22" },
 	{ "sshd_wbfp", "2" },
 	{ "misc_lpr_x", "0" },
 	{ "misc_ping_x", "0" },
@@ -477,7 +477,7 @@ struct nvram_pair router_defaults[] = {
 	{ "dr_staticipaddr_x", "" },
 	{ "dr_staticnetmask_x", "0" },
 	{ "dr_staticgateway_x", "" },
-	
+
 	/* scutclient related */
 	{ "scutclient_enable", "0" },
 	{ "scutclient_debug", "0" },
@@ -495,7 +495,7 @@ struct nvram_pair router_defaults[] = {
 
 	/* NAPT66 */
 	{ "napt66_enable", "0" },
-	
+
 	/* vlmcsd */
 	{ "vlmcsd_enable", "0" },
 
@@ -504,7 +504,7 @@ struct nvram_pair router_defaults[] = {
 	{ "dns_forwarder_port", "5353" },
 	{ "dns_forwarder_bind", "0.0.0.0" },
 	{ "dns_forwarder_server", "8.8.4.4:53" },
-	
+
 	/* shadowsocks */
 	{ "ss_type", "0" }, //0=ss, 1=ssr
 	{ "ss_enable", "0" },
@@ -512,7 +512,7 @@ struct nvram_pair router_defaults[] = {
 	{ "ss_server", "127.0.0.1" },
 	{ "ss_server_port", "8989" },
 	{ "ss_key", "Secret" },
-	{ "ss_method", "rc4-md5" },
+	{ "ss_method", "chacha20" },
 	{ "ss_udp", "0" },
 	{ "ss_local_port", "1080" },
 	{ "ss_mtu", "1492" },
@@ -672,7 +672,11 @@ struct nvram_pair router_defaults[] = {
 #endif
 	{ "watchdog_cpu", "1" },
 	{ "front_led_all", "1" },
+#if defined(BOARD_ROLE_REPEATER)
+	{ "front_led_wan", "3" },
+#else
 	{ "front_led_wan", "2" },
+#endif
 	{ "front_led_lan", "2" },
 	{ "front_led_wif", "1" },
 	{ "front_led_usb", "1" },
