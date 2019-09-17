@@ -97,17 +97,26 @@ cd /opt/rt-n56u/toolchain-mipsel
 ```
 * (可选)修改机型配置文件
 ```shell
-nano /opt/rt-n56u/trunk/configs/templates/PSG1218.config
+nano /opt/rt-n56u/trunk/configs/templates/NEWIFI3.config
 ```
 * 清理代码树并开始编译
 ```shell
 cd /opt/rt-n56u/trunk
-sudo ./clear_tree
-sudo ./build_firmware_modify PSG1218
+./clear_tree
+./build_firmware NEWIFI3
 #脚本第一个参数为路由型号，在trunk/configs/templates/中
 #编译好的固件在trunk/images里
 ```
-
+* 刷写固件
+```shell
+cd /opt/rt-n56u/trunk
+./flash_firmware 192.168.1.1 NEWIFI3
+```
+* 准备一个方便的编译环境
+```shell
+echo -e "cd /opt/rt-n56u/trunk\nexport BOARD_NAME=NEWIFI3" >> ~/.profile
+#这样登录后可以输入 `./build_firmware` 直接编译，直接 `./flash_firmware 192.168.1.1` 刷写固件
+```
 ***
 
 ### 请参阅 ###
