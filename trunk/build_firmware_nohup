@@ -1,10 +1,10 @@
 #!/bin/sh
-./build_firmware_modify $1 > build.log 2>&1 &
+./build_firmware $1 > build.log 2>&1 &
 
 while true ;do
 	sleep 10
 	echo "===================================================================================================="
-	process_status=$(ps aux |grep build_firmware_modify |grep -v "grep")
+	process_status=$(ps aux |grep build_firmware |grep -v "grep")
 
 	if [ -z "$process_status" ] ;then
 		echo "Build script exited"

@@ -1,0 +1,11 @@
+#!/bin/sh
+[ ! -z "$2" ] && BOARD_NAME="$2" # export BOARD_NAME=NEWIFI3
+
+if [ $# = 0 ] || [ -z "$BOARD_NAME" ]; then
+  echo "Usage: $0 <TargetHost> [BOARD_NAME]"
+  exit 0
+fi
+
+scp /opt/rt-n56u/trunk/images/${BOARD_NAME}_3.4.3.9-`date +%m%d`.trx $1:/tmp/firmware.trx
+ssh $1 "mtd_write -r write /tmp/firmware.trx Firmware_Stub"
+
