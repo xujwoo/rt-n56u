@@ -488,6 +488,7 @@ EOF
 ### gfwlist related (resolve by port 5353)
 #min-cache-ttl=3600
 #conf-dir=/etc/storage/gfwlist
+#server=/scratch.mit.edu/127.0.0.1#5353
 
 EOF
 	fi
