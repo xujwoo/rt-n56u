@@ -369,7 +369,7 @@ struct nvram_pair router_defaults[] = {
 	{ "apps_dms", "0" },
 	{ "apps_itunes", "0"},
 	{ "sh_num", "0" },
-	{ "computer_name", DEF_DEF_COMPUTER_NAME },
+	{ "computer_name", DEF_COMPUTER_NAME },
 	{ "pcache_reclaim", "2" },
 	{ "usb3_disable", "0" },
 	{ "u2ec_enable", "1" },
