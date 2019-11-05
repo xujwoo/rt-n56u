@@ -80,14 +80,12 @@ Contributors of this project are not responsible for what happens next.
 >- JCG-AC860M (USB)
 >- JCG-836PRO (USB)
 >- DIR-882 (USB)
->- DIR-878
 >- RT-AC1200GU (USB)
 >- XY-C1 (USB)
 >- NEWIFI-MINI (USB)
 >- HC5861B
 >- 360P2 (USB)
 >- MR2600 (USB)
->- PSG1208
 
 ***
 
@@ -102,8 +100,7 @@ pkg-config zlib1g-dev libgmp3-dev libmpc-dev libmpfr-dev libncurses5-dev libltdl
 ```
 * 克隆源码
 ```shell
-git clone --depth=1 https://gitee.com/hanwckf/rt-n56u.git /opt/rt-n56u
-#git clone --depth=1 https://github.com/hanwckf/rt-n56u.git /opt/rt-n56u
+git clone --depth=1 git@github.com:Yonsm/Padavan.git /opt/rt-n56u
 ```
 * 编译工具链
 ```shell
@@ -113,17 +110,26 @@ cd /opt/rt-n56u/toolchain-mipsel
 ```
 * (可选)修改机型配置文件
 ```shell
-nano /opt/rt-n56u/trunk/configs/templates/PSG1218.config
+nano /opt/rt-n56u/trunk/configs/templates/NEWIFI3.config
 ```
 * 清理代码树并开始编译
 ```shell
 cd /opt/rt-n56u/trunk
-sudo ./clear_tree
-fakeroot ./build_firmware_modify PSG1218
+./clear_tree
+./make_firmware NEWIFI3
 #脚本第一个参数为路由型号，在trunk/configs/templates/中
 #编译好的固件在trunk/images里
 ```
-
+* 刷写固件
+```shell
+cd /opt/rt-n56u/trunk
+./flash_firmware 192.168.1.1 NEWIFI3
+```
+* 准备一个方便的编译环境
+```shell
+echo -e "cd /opt/rt-n56u/trunk\nexport BOARD_NAME=NEWIFI3" >> ~/.profile
+#这样登录后可以输入 `./build_firmware` 直接编译，直接 `./flash_firmware 192.168.1.1` 刷写固件
+```
 ***
 
 ### 请参阅 ###
