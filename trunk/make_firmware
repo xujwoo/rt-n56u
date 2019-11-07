@@ -1,4 +1,4 @@
 #!/bin/sh
 
 [ ! -z "$1" ] && BOARD_NAME="$1"
-./build_firmware_modify "$BOARD_NAME"
+fakeroot ./build_firmware_modify "$BOARD_NAME"
