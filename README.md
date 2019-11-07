@@ -115,15 +115,15 @@ nano /opt/rt-n56u/trunk/configs/templates/NEWIFI3.config
 * 清理代码树并开始编译
 ```shell
 cd /opt/rt-n56u/trunk
-./clear_tree
-./make_firmware NEWIFI3
+sudo ./clear_tree
+fakeroot ./build_firmware_modify NEWIFI3
 #脚本第一个参数为路由型号，在trunk/configs/templates/中
 #编译好的固件在trunk/images里
 ```
 * 刷写固件
 ```shell
 cd /opt/rt-n56u/trunk
-./flash_firmware 192.168.1.1 NEWIFI3
+./flash_firmware 192.168.1.1
 ```
 * 准备一个方便的编译环境
 ```shell
