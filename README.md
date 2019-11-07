@@ -116,7 +116,7 @@ nano /opt/rt-n56u/trunk/configs/templates/NEWIFI3.config
 ```shell
 cd /opt/rt-n56u/trunk
 sudo ./clear_tree
-fakeroot ./build_firmware_modify NEWIFI3
+./make_firmware NEWIFI3
 #脚本第一个参数为路由型号，在trunk/configs/templates/中
 #编译好的固件在trunk/images里
 ```
