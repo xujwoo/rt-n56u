@@ -14,6 +14,8 @@ cp -f configs/templates/$1.config .config
 ROOTDIR=`pwd`
 export ROOTDIR=$ROOTDIR
 
+echo "CONFIG_FIRMWARE_INCLUDE_WING=y" >> .config
+
 kernel_id="3.4.x"
 kernel_cf=""
 kernel_tf=""
