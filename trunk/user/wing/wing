@@ -1,0 +1,155 @@
+#!/bin/sh
+PATH=$(cd "${0%/*}"; pwd):$PATH
+
+THREAD_COUNT=4
+REDIR_PORT=1088
+REMOTE_DNS=8.8.8.8
+DNSMASQ_CONF=/etc/storage/dnsmasq/dnsmasq.conf
+GFWLIST_CONF=/etc/storage/dnsmasq/gfwlist.conf
+GFWLIST_CONF_RO=/etc_ro/gfwlist.conf
+
+usage()
+{
+	echo "Usage: $0 <[start]|restart|stop|status|update>"
+	echo
+	echo "Local Transparent mode (trojan only): $0 <TROJAN_HOST> <TROJAN_PORT> <PASSWORD>"
+	echo "Local Socks mode (trojan+ipt2socks): $0 <TROJAN_HOST> <TROJAN_PORT> <PASSWORD> client"
+	echo "Remote Socks mode (ipt2socks only): $0 <SOCKS_HOST> <SOCKS_PORT>"
+	echo
+	exit 0
+}
+
+update()
+{
+	curl -k -o $GFWLIST_CONF https://cokebar.github.io/gfwlist2dnsmasq/dnsmasq_gfwlist_ipset.conf
+	[ $? != 0 ] && exit 1
+}
+
+check()
+{
+	if [ ! -f $GFWLIST_CONF ]; then
+		if [ -f $GFWLIST_CONF_RO ]; then
+			GFWLIST_CONF=$GFWLIST_CONF_RO
+		else
+			update
+		fi
+	fi
+}
+
+start()
+{
+	# prepage
+	[ -z $2 ] && usage
+	check
+
+	# trojan
+	if [ -z $3 ]; then
+		RUN_MODE="Remote Socks"
+		SOCKS_HOST=$1
+		SOCKS_PORT=$2
+	else
+		TROJAN_HOST=$1
+		TROJAN_PORT=$2
+		TROJAN_PASS=$3
+		if [ -z $4 ]; then RUN_TYPE=nat; else RUN_TYPE=$4; fi
+		if [ "$RUN_TYPE" = "nat" ]; then
+			RUN_MODE="Local Transparent"
+			LOCAL_PORT=$REDIR_PORT
+			SOCKS_HOST=
+		else
+			RUN_MODE="Local Socks"
+			LOCAL_PORT=1080
+			SOCKS_HOST=127.0.0.1
+			SOCKS_PORT=$LOCAL_PORT
+		fi
+		echo "{\"run_type\":\"$RUN_TYPE\",\"local_addr\":\"0.0.0.0\",\"local_port\":$LOCAL_PORT,\"remote_addr\":\"$TROJAN_HOST\",\"remote_port\":$TROJAN_PORT,\"password\":[\"$TROJAN_PASS\"],\"ssl\":{\"verify\":false}}" > /tmp/trojan.conf
+		nohup trojan -c /tmp/trojan.conf &> /tmp/trojan.log &
+	fi
+
+	# ipt2socks
+	if [ ! -z $SOCKS_HOST ]; then
+		nohup ipt2socks -s $SOCKS_HOST -p $SOCKS_PORT -b 0.0.0.0 -l $REDIR_PORT -j $THREAD_COUNT -T -4 -R &> /tmp/ipt2socks.log &
+	fi
+
+	# iptables
+	ipset create gfwlist iphash
+	ipset add gfwlist $REMOTE_DNS
+	iptables -t nat -A OUTPUT -p tcp -m set --match-set gfwlist dst -j REDIRECT --to-port $REDIR_PORT
+	iptables -t nat -A PREROUTING -p tcp -m set --match-set gfwlist dst -j REDIRECT --to-port $REDIR_PORT
+
+	# dns2tcp
+	# TODO: Keep dns2tcp or dns-forwarder only
+	# TODO: Modify dnsmasq to support HTTP/TCP DNS
+if [ "$USE_DNSFORWARDER" == "1" ]; then
+	nohup dns-forwarder -p 5353 -s $REMOTE_DNS &> /tmp/dns-forwarder.log &
+else
+	nohup dns2tcp -L 0.0.0.0#5353 -R $REMOTE_DNS#53 &> /tmp/dns2tcp.log &
+fi
+
+	# dnsmasq
+	# TODO: Modify dnsmasq to support domain-list-file based server config
+	grep "conf-file=$GFWLIST_CONF" $DNSMASQ_CONF > /dev/null
+	if [ $? != 0 ]; then
+		killall dnsmasq
+		echo "conf-file=$GFWLIST_CONF" >> $DNSMASQ_CONF
+		dnsmasq
+	fi
+	echo "Wing is running in $RUN_MODE mode..."
+}
+
+stop()
+{
+	iptables -t nat -D OUTPUT -p tcp -m set --match-set gfwlist dst -j REDIRECT --to-port $REDIR_PORT 2> /dev/null
+	iptables -t nat -D PREROUTING -p tcp -m set --match-set gfwlist dst -j REDIRECT --to-port $REDIR_PORT 2> /dev/null
+	ipset destroy gfwlist 2> /dev/null
+
+	[ -f /tmp/dns-forwarder.log ] && rm /tmp/dns-forwarder.log && killall dns-forwarder
+	[ -f /tmp/dns2tcp.log ] && rm /tmp/dns2tcp.log && killall dns2tcp
+	[ -f /tmp/ipt2socks.log ] && rm /tmp/ipt2socks.log && killall ipt2socks
+	[ -f /tmp/trojan.log ] && rm /tmp/trojan.* && killall trojan
+
+	check
+	sed -i /conf-file=${GFWLIST_CONF//\//\\/}/d $DNSMASQ_CONF
+	killall dnsmasq
+	dnsmasq
+}
+
+status()
+{
+	[ ${1::1} = t ] && [ -f /tmp/trojan.log ] && tail -f /tmp/trojan.log && return
+	[ ${1::4} = dns2 ] && [ -f /tmp/dns2tcp.log ] && tail -f /tmp/dns2tcp.log && return
+	[ ${1::4} = ipt2 ] && [ -f /tmp/ipt2socks.log ] && tail -f /tmp/ipt2socks.log && return
+
+	([ -z $1 ] || [ ${1::3} = ipt ]) && iptables -t nat -L PREROUTING && iptables -t nat -L OUTPUT
+	([ -z $1 ] || [ ${1::3} = ips ]) && echo && ipset -L gfwlist | more
+
+	[ -z $1 ] && [ -f /tmp/dns2tcp.log ] && echo && cat /tmp/dns2tcp.log | more
+	[ -z $1 ] && [ -f /tmp/ipt2socks.log ] && echo && cat /tmp/ipt2socks.log | more
+	[ -z $1 ] && [ -f /tmp/trojan.log ] && echo && cat /tmp/trojan.log | more
+
+	([ -z $1 ] || [ ${1::1} = d ]) && tail -f /tmp/syslog.log
+}
+
+case "$1" in
+	start)
+		start $2 $3 $4 $5
+		;;
+	stop)
+		stop
+		;;
+	restart)
+		stop
+		start $2 $3 $4 $5
+		;;
+	status)
+		status $2
+		;;
+	update)
+		update
+		;;
+	*)
+		start $1 $2 $3 $5
+		;;
+esac
+
+
