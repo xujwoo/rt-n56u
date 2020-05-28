@@ -217,7 +217,7 @@ func_fill()
 	user_sswan_conf="$dir_sswan/strongswan.conf"
 	user_sswan_ipsec_conf="$dir_sswan/ipsec.conf"
 	user_sswan_secrets="$dir_sswan/ipsec.secrets"
-	
+
 	chnroute_file="/etc_ro/chnroute.bz2"
 	gfwlist_conf_file="/etc_ro/gfwlist.bz2"
 
@@ -236,7 +236,7 @@ func_fill()
 
 	# create gfwlist
 	if [ ! -d "$dir_gfwlist" ] ; then
-		if [ -f "$gfwlist_conf_file" ]; then	
+		if [ -f "$gfwlist_conf_file" ]; then
 			mkdir -p "$dir_gfwlist" && tar jxf "$gfwlist_conf_file" -C "$dir_gfwlist"
 		fi
 	fi
@@ -265,8 +265,21 @@ func_fill()
 #drop caches
 sync && echo 3 > /proc/sys/vm/drop_caches
 
+# Roaming assistant for mt76xx WiFi
+#iwpriv ra0 set KickStaRssiLow=-85
+#iwpriv ra0 set AssocReqRssiThres=-80
+#iwpriv rai0 set KickStaRssiLow=-85
+#iwpriv rai0 set AssocReqRssiThres=-80
+
 # Mount SATA disk
 #mdev -s
+
+# HomeAssistant asuswrt device tracker
+#/bin/ln -s /tmp/dnsmasq.leases /var/lib/misc/dnsmasq.leases
+
+# ShadowSocks server
+#iptables -A INPUT -p tcp --dport 8989 -j ACCEPT
+#ss-server -p 8989 -k your_password -m chacha20
 
 EOF
 		chmod 755 "$script_started"
