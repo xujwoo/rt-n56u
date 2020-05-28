@@ -262,6 +262,9 @@ func_fill()
 #modprobe ip_set_list_set
 #modprobe xt_set
 
+# wing
+#wing <HOST> <PORT> <PASS>
+
 #drop caches
 sync && echo 3 > /proc/sys/vm/drop_caches
 
@@ -505,6 +508,13 @@ EOF
 # Custom user servers file for dnsmasq
 # Example:
 #server=/mit.ru/izmuroma.ru/10.25.11.30
+
+#server=/mit.edu/127.0.0.1#5353
+#ipset=/mit.edu/gfwlist
+#server=/openwrt.org/lede-project.org/127.0.0.1#5353
+#ipset=/openwrt.org/lede-project.org/gfwlist
+#server=/github.com/github.io/githubusercontent.com/127.0.0.1#5353
+#ipset=/github.com/github.io/githubusercontent.com/gfwlist
 
 EOF
 		chmod 644 "$user_dnsmasq_serv"
