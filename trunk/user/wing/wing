@@ -107,11 +107,6 @@ stop()
 	[ -f /tmp/dns2tcp.log ] && rm /tmp/dns2tcp.log && killall dns2tcp
 	[ -f /tmp/ipt2socks.log ] && rm /tmp/ipt2socks.log && killall ipt2socks
 	[ -f /tmp/trojan.log ] && rm /tmp/trojan.* && killall trojan
-
-	check
-	sed -i /conf-file=${GFWLIST_CONF//\//\\/}/d $DNSMASQ_CONF
-	killall dnsmasq
-	dnsmasq
 }
 
 status()
@@ -136,6 +131,10 @@ case "$1" in
 		;;
 	stop)
 		stop
+		check
+		sed -i /conf-file=${GFWLIST_CONF//\//\\/}/d $DNSMASQ_CONF
+		killall dnsmasq
+		dnsmasq
 		;;
 	restart)
 		stop
